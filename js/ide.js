@@ -54,7 +54,7 @@ var layoutConfig = {
         content: [{
             type: "component",
             componentName: "source",
-            title: "SOURCE(your code)",
+            title: "SOURCE",
             isClosable: false,
             componentState: {
                 readOnly: false
