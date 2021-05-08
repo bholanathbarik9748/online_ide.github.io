@@ -66,7 +66,7 @@ var layoutConfig = {
                 content: [{
                     type: "component",
                     componentName: "stdin",
-                    title: "STDIN(user input)",
+                    title: "STDIN",
                     isClosable: false,
                     componentState: {
                         readOnly: false
@@ -77,7 +77,7 @@ var layoutConfig = {
                 content: [{
                         type: "component",
                         componentName: "stdout",
-                        title: "STDOUT(output)",
+                        title: "STDOUT",
                         isClosable: false,
                         componentState: {
                             readOnly: true
