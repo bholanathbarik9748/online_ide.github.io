@@ -740,7 +740,6 @@ var bashSource = "echo \"Hello tat-it-official\"";
 var basicSource = "PRINT \"Hello tat-it-official\"";
 
 var cSource = "\
-// Powered by Judge0\n\
 #include <stdio.h>\n\
 \n\
 int main(void) {\n\
