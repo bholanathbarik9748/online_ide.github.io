@@ -1,8 +1,7 @@
-var defaultUrl = localStorageGetItem("api-url") || "https://secure.judge0.com/standard";
+var defaultUrl = localStorageGetItem("api-url") || "https://ce.judge0.com";
 var apiUrl = defaultUrl;
 var wait = localStorageGetItem("wait") || false;
-var pbUrl = "https://pb.judge0.com";
-var check_timeout = 200;
+var check_timeout = 300;
 
 var blinkStatusLine = ((localStorageGetItem("blink") || "true") === "true");
 var editorMode = localStorageGetItem("editorMode") || "normal";
@@ -54,11 +53,12 @@ var layoutConfig = {
         content: [{
             type: "component",
             componentName: "source",
-            title: "SOURCE(your Code)",
+            title: "SOURCE",
             isClosable: false,
             componentState: {
                 readOnly: false
-            }
+            },
+            width: 60
         }, {
             type: "column",
             content: [{
@@ -66,7 +66,7 @@ var layoutConfig = {
                 content: [{
                     type: "component",
                     componentName: "stdin",
-                    title: "STDIN(user input)",
+                    title: "STDIN",
                     isClosable: false,
                     componentState: {
                         readOnly: false
@@ -77,7 +77,7 @@ var layoutConfig = {
                 content: [{
                         type: "component",
                         componentName: "stdout",
-                        title: "STDOUT(output)",
+                        title: "STDOUT",
                         isClosable: false,
                         componentState: {
                             readOnly: true
@@ -254,47 +254,6 @@ function getIdFromURI() {
   return uri.split("&")[0];
 }
 
-function save() {
-    var content = JSON.stringify({
-        source_code: encode(sourceEditor.getValue()),
-        language_id: $selectLanguage.val(),
-        compiler_options: $compilerOptions.val(),
-        command_line_arguments: $commandLineArguments.val(),
-        stdin: encode(stdinEditor.getValue()),
-        stdout: encode(stdoutEditor.getValue()),
-        stderr: encode(stderrEditor.getValue()),
-        compile_output: encode(compileOutputEditor.getValue()),
-        sandbox_message: encode(sandboxMessageEditor.getValue()),
-        status_line: encode($statusLine.html())
-    });
-    var filename = "judge0-ide.json";
-    var data = {
-        content: content,
-        filename: filename
-    };
-
-    $.ajax({
-        url: pbUrl,
-        type: "POST",
-        async: true,
-        headers: {
-            "Accept": "application/json"
-        },
-        data: data,
-        xhrFields: {
-            withCredentials: true
-        },
-        success: function (data, textStatus, jqXHR) {
-            if (getIdFromURI() != data["short"]) {
-                window.history.replaceState(null, null, location.origin + location.pathname + "?" + data["short"]);
-            }
-        },
-        error: function (jqXHR, textStatus, errorThrown) {
-            handleError(jqXHR, textStatus, errorThrown);
-        }
-    });
-}
-
 function downloadSource() {
     var value = parseInt($selectLanguage.val());
     download(sourceEditor.getValue(), fileNames[value], "text/plain");
@@ -323,29 +282,6 @@ function loadSavedSource() {
                 changeEditorLanguage();
             },
             error: handleRunError
-        });
-    } else if (snippet_id.length == 4) {
-        $.ajax({
-            url: pbUrl + "/" + snippet_id + ".json",
-            type: "GET",
-            success: function (data, textStatus, jqXHR) {
-                sourceEditor.setValue(decode(data["source_code"]));
-                $selectLanguage.dropdown("set selected", data["language_id"]);
-                $compilerOptions.val(data["compiler_options"]);
-                $commandLineArguments.val(data["command_line_arguments"]);
-                stdinEditor.setValue(decode(data["stdin"]));
-                stdoutEditor.setValue(decode(data["stdout"]));
-                stderrEditor.setValue(decode(data["stderr"]));
-                compileOutputEditor.setValue(decode(data["compile_output"]));
-                sandboxMessageEditor.setValue(decode(data["sandbox_message"]));
-                $statusLine.html(decode(data["status_line"]));
-                changeEditorLanguage();
-            },
-            error: function (jqXHR, textStatus, errorThrown) {
-                showError("Not Found", "Code not found!");
-                window.history.replaceState(null, null, location.origin + location.pathname);
-                loadRandomLanguage();
-            }
         });
     } else {
         loadRandomLanguage();
@@ -473,7 +409,8 @@ function loadRandomLanguage() {
     for (var i = 0; i < $selectLanguage[0].options.length; ++i) {
         values.push($selectLanguage[0].options[i].value);
     }
-    $selectLanguage.dropdown("set selected", values[Math.floor(Math.random() * $selectLanguage[0].length)]);
+    // $selectLanguage.dropdown("set selected", values[Math.floor(Math.random() * $selectLanguage[0].length)]);
+    $selectLanguage.dropdown("set selected", values[9]);
     apiUrl = resolveApiUrl($selectLanguage.val());
     insertTemplate();
 }
@@ -575,7 +512,7 @@ $(document).ready(function () {
     });
 
     $navigationMessage = $("#navigation-message span");
-    $updates = $("#updates");
+    $updates = $("#judge0-more");
 
     $(`input[name="editor-mode"][value="${editorMode}"]`).prop("checked", true);
     $("input[name=\"editor-mode\"]").on("change", function(e) {
@@ -616,9 +553,6 @@ $(document).ready(function () {
             wait = !wait;
             localStorageSetItem("wait", wait);
             alert(`Submission wait is ${wait ? "ON. Enjoy" : "OFF"}.`);
-        } else if (event.ctrlKey && keyCode == 83) { // Ctrl+S
-            e.preventDefault();
-            save();
         } else if (event.ctrlKey && keyCode == 107) { // Ctrl++
             e.preventDefault();
             fontSize += 1;
@@ -655,8 +589,7 @@ $(document).ready(function () {
                 language: "cpp",
                 minimap: {
                     enabled: false
-                },
-                rulers: [80, 120]
+                }
             });
 
             changeEditorMode();
@@ -771,6 +704,7 @@ $(document).ready(function () {
             }
             $("#site-navigation").css("border-bottom", "1px solid black");
             sourceEditor.focus();
+            editorsUpdateFontSize(fontSize);
         });
 
         layout.init();
@@ -797,19 +731,20 @@ _start:\n\
 \n\
 section	.rodata\n\
 \n\
-msg	db 'hello, world', 0xa\n\
+msg	db 'Hello tat-it-official', 0xa\n\
 len	equ	$ - msg\n\
 ";
 
-var bashSource = "echo \"hello, world\"";
+var bashSource = "echo \"Hello tat-it-official\"";
 
-var basicSource = "PRINT \"hello, world\"";
+var basicSource = "PRINT \"Hello tat-it-official\"";
 
 var cSource = "\
+// Powered by Judge0\n\
 #include <stdio.h>\n\
 \n\
 int main(void) {\n\
-    printf(\"hello, world\\n\");\n\
+    printf(\"Hello tat-it-official!\\n\");\n\
     return 0;\n\
 }\n\
 ";
@@ -817,7 +752,7 @@ int main(void) {\n\
 var csharpSource = "\
 public class Hello {\n\
     public static void Main() {\n\
-        System.Console.WriteLine(\"hello, world\");\n\
+        System.Console.WriteLine(\"Hello tat-it-official\");\n\
     }\n\
 }\n\
 ";
@@ -826,37 +761,37 @@ var cppSource = "\
 #include <iostream>\n\
 \n\
 int main() {\n\
-    std::cout << \"hello, world\" << std::endl;\n\
+    std::cout << \"Hello tat-it-official\" << std::endl;\n\
     return 0;\n\
 }\n\
 ";
 
-var clojureSource = "(println \"hello, world\")\n";
+var clojureSource = "(println \"Hello tat-it-official\")\n";
 
 var cobolSource = "\
 IDENTIFICATION DIVISION.\n\
 PROGRAM-ID. MAIN.\n\
 PROCEDURE DIVISION.\n\
-DISPLAY \"hello, world\".\n\
+DISPLAY \"Hello tat-it-official\".\n\
 STOP RUN.\n\
 ";
 
-var lispSource = "(write-line \"hello, world\")";
+var lispSource = "(write-line \"Hello tat-it-official\")";
 
 var dSource = "\
 import std.stdio;\n\
 \n\
 void main()\n\
 {\n\
-    writeln(\"hello, world\");\n\
+    writeln(\"Hello tat-it-official\");\n\
 }\n\
 ";
 
-var elixirSource = "IO.puts \"hello, world\"";
+var elixirSource = "IO.puts \"Hello tat-it-official\"";
 
 var erlangSource = "\
 main(_) ->\n\
-    io:fwrite(\"hello, world\\n\").\n\
+    io:fwrite(\"Hello tat-it-official\\n\").\n\
 ";
 
 var executableSource = "\
@@ -865,17 +800,17 @@ Judge0 IDE assumes that content of executable is Base64 encoded.\n\
 This means that you should Base64 encode content of your binary,\n\
 paste it here and click \"Run\".\n\
 \n\
-Here is an example of compiled \"hello, world\" NASM program.\n\
+Here is an example of compiled \"Hello tat-it-official\" NASM program.\n\
 Content of compiled binary is Base64 encoded and used as source code.\n\
 \n\
 https://ide.judge0.com/?kS_f\n\
 ";
 
-var fsharpSource = "printfn \"hello, world\"\n";
+var fsharpSource = "printfn \"Hello tat-it-official\"\n";
 
 var fortranSource = "\
 program main\n\
-    print *, \"hello, world\"\n\
+    print *, \"Hello tat-it-official\"\n\
 end\n\
 ";
 
@@ -885,31 +820,31 @@ package main\n\
 import \"fmt\"\n\
 \n\
 func main() {\n\
-    fmt.Println(\"hello, world\")\n\
+    fmt.Println(\"Hello tat-it-official\")\n\
 }\n\
 ";
 
-var groovySource = "println \"hello, world\"\n";
+var groovySource = "println \"Hello tat-it-official\"\n";
 
-var haskellSource = "main = putStrLn \"hello, world\"";
+var haskellSource = "main = putStrLn \"Hello tat-it-official\"";
 
 var javaSource = "\
 public class Main {\n\
     public static void main(String[] args) {\n\
-        System.out.println(\"hello, world\");\n\
+        System.out.println(\"Hello tat-it-official\");\n\
     }\n\
 }\n\
 ";
 
-var javaScriptSource = "console.log(\"hello, world\");";
+var javaScriptSource = "console.log(\"Hello tat-it-official\");";
 
 var kotlinSource = "\
 fun main() {\n\
-    println(\"hello, world\")\n\
+    println(\"Hello tat-it-official\")\n\
 }\n\
 ";
 
-var luaSource = "print(\"hello, world\")";
+var luaSource = "print(\"Hello tat-it-official\")";
 
 var objectiveCSource = "\
 #import <Foundation/Foundation.h>\n\
@@ -925,14 +860,14 @@ int main() {\n\
 }\n\
 ";
 
-var ocamlSource = "print_endline \"hello, world\"";
+var ocamlSource = "print_endline \"Hello tat-it-official\"";
 
-var octaveSource = "printf(\"hello, world\\n\");";
+var octaveSource = "printf(\"Hello tat-it-official\\n\");";
 
 var pascalSource = "\
 program Hello;\n\
 begin\n\
-    writeln ('hello, world')\n\
+    writeln ('Hello tat-it-official')\n\
 end.\n\
 ";
 
@@ -943,26 +878,26 @@ print \"hello, $name\";\n\
 
 var phpSource = "\
 <?php\n\
-print(\"hello, world\\n\");\n\
+print(\"Hello tat-it-official\\n\");\n\
 ?>\n\
 ";
 
-var plainTextSource = "hello, world\n";
+var plainTextSource = "Hello tat-it-official\n";
 
 var prologSource = "\
 :- initialization(main).\n\
-main :- write('hello, world\\n').\n\
+main :- write('Hello tat-it-official\\n').\n\
 ";
 
-var pythonSource = "print(\"hello, world\")";
+var pythonSource = "print(\"Hello tat-it-official\")";
 
-var rSource = "cat(\"hello, world\\n\")";
+var rSource = "cat(\"Hello tat-it-official\\n\")";
 
-var rubySource = "puts \"hello, world\"";
+var rubySource = "puts \"Hello tat-it-official\"";
 
 var rustSource = "\
 fn main() {\n\
-    println!(\"hello, world\");\n\
+    println!(\"Hello tat-it-official\");\n\
 }\n\
 ";
 
@@ -995,12 +930,12 @@ let name = readLine()\n\
 print(\"hello, \\(name!)\")\n\
 ";
 
-var typescriptSource = "console.log(\"hello, world\");";
+var typescriptSource = "console.log(\"Hello tat-it-official\");";
 
 var vbSource = "\
 Public Module Program\n\
    Public Sub Main()\n\
-      Console.WriteLine(\"hello, world\")\n\
+      Console.WriteLine(\"Hello tat-it-official\")\n\
    End Sub\n\
 End Module\n\
 ";
@@ -1014,7 +949,7 @@ extern func void printf(char *str, ...);\n\
 \n\
 func int main()\n\
 {\n\
-    printf(\"hello, world\\n\");\n\
+    printf(\"Hello tat-it-official\\n\");\n\
     return 0;\n\
 }\n\
 ";
@@ -1103,7 +1038,7 @@ print(f\"Hello from processor with rank {world_rank} out of {world_size} process
 var nimSource = "\
 # On the Judge0 IDE, Nim is automatically\n\
 # updated every day to the latest stable version.\n\
-echo \"hello, world\"\n\
+echo \"Hello tat-it-official\"\n\
 ";
 
 var pythonForMlSource = "\
@@ -1113,7 +1048,7 @@ import pandas\n\
 import scipy\n\
 import sklearn\n\
 \n\
-print(\"hello, world\")\n\
+print(\"Hello tat-it-official\")\n\
 ";
 
 var bosqueSource = "\
@@ -1383,7 +1318,7 @@ var languageIdTable = {
     1024: 24
 }
 
-var extraApiUrl = "https://secure.judge0.com/extra";
+var extraApiUrl = "https://extra-ce.judge0.com";
 var languageApiUrlTable = {
     1001: extraApiUrl,
     1002: extraApiUrl,

@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
 
-
+    <meta name="description"
+        content="Free and open-source online code editor that allows you to write and execute code from a rich set of languages.">
     <meta name="keywords"
         content="online editor, online code editor, online ide, online compiler, online interpreter, run code online, learn programming online,
             online debugger, programming in browser, online code runner, online code execution, debug online, debug C code online, debug C++ code online,
@@ -14,9 +15,10 @@
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta property="og:title" content="tat-it-official IDE">
-    <meta property="og:image"
-        content="https://raw.githubusercontent.com/tat-it-official/ide/master/.github/wallpaper.png">
+    <meta property="og:title" content="tat-it-official IDE - Free and open-source online code editor">
+    <meta property="og:description"
+        content="Free and open-source online code editor that allows you to write and execute code from a rich set of languages.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/judge0/ide/master/.github/wallpaper.png">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
@@ -39,8 +41,8 @@
         };
     </script>
     <script src="https://unpkg.com/monaco-editor/min/vs/loader.js"></script>
-    <script src="https://unpkg.com/monaco-editor@0.18.1/min/vs/editor/editor.main.nls.js"></script>
-    <script src="https://unpkg.com/monaco-editor@0.18.1/min/vs/editor/editor.main.js"></script>
+    <script src="https://unpkg.com/monaco-editor@0.23.0/min/vs/editor/editor.main.nls.js"></script>
+    <script src="https://unpkg.com/monaco-editor@0.23.0/min/vs/editor/editor.main.js"></script>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.4.1/semantic.min.css"
         integrity="sha256-9mbkOfVho3ZPXfM7W8sV2SndrGDuh7wuyLjtsWeTI1Q=" crossorigin="anonymous" />
@@ -56,10 +58,9 @@
     <link type="text/css" rel="stylesheet" href="css/ide.css">
 
     <title>tat-it-official IDE</title>
-    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" src="./images/judge0_icon.png" type="image/x-icon">
     <link rel="icon" href="./favicon.ico" type="image/x-icon">
-
-    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-83802640-2"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-RHNJ50BJ2F"></script>
     <script>
         window.dataLayer = window.dataLayer || [];
 
@@ -67,7 +68,19 @@
             dataLayer.push(arguments);
         }
         gtag('js', new Date());
-        gtag('config', 'UA-83802640-2');
+        gtag('config', 'G-RHNJ50BJ2F');
+    </script>
+
+    <script type="text/javascript">
+        window.$crisp = [];
+        window.CRISP_WEBSITE_ID = "ee4621ff-c682-44ac-8cfa-1835beddb98a";
+        (function () {
+            d = document;
+            s = d.createElement("script");
+            s.src = "https://client.crisp.chat/l.js";
+            s.async = 1;
+            d.getElementsByTagName("head")[0].appendChild(s);
+        })();
     </script>
 </head>
 
@@ -75,7 +88,7 @@
     <div id="site-navigation" class="ui small inverted menu">
         <div id="site-header" class="header item">
             <a href="/">
-                <img id="site-icon" src="./images/tat-it-offcial_icon.png">
+                <img id="site-icon" src="./images/judge0_icon.png">
                 <h2>tat-it-official IDE</h2>
             </a>
         </div>
@@ -85,11 +98,9 @@
                 <div class="menu">
                     <a class="item" target="_blank" href="https://bholanathbarik9748.github.io/online_ide.github.io/"><i
                             class="file code icon"></i> New File</a>
-                    <div class="item" onclick="save()"><i class="save icon"></i> Save (Ctrl + S)</div>
-                    <!-- <div class="item" onclick="downloadSource()"><i class="download icon"></i> Download</div> -->
-                    <!-- <div class="item"><i class="share icon"></i> Share</div> -->
-                    <!-- <div id="insert-template-btn" class="item"><i class="file code outline icon"></i> Insert template
-                        for current language</div> -->
+                    <div class="item" onclick="downloadSource()"><i class="download icon"></i> Download</div>
+                    <div id="insert-template-btn" class="item"><i class="file code outline icon"></i> Insert template
+                        for current language</div>
                 </div>
             </div>
             <div class="link item" onclick="$('#site-settings').modal('show')"><i class="cog icon"></i> Settings</div>
@@ -184,7 +195,6 @@
                 <span class="navigation-message-text"></span>
             </div>
         </div>
-
     </div>
 
     <div id="site-content"></div>
@@ -202,55 +212,6 @@
             </div>
         </div>
     </div>
-
-    <div id="site-settings" class="ui modal">
-        <i class="close icon"></i>
-        <div class="header">
-            <i class="cog icon"></i>
-            Settings
-        </div>
-        <div class="content">
-            <div class="ui form">
-                <div class="inline fields">
-                    <label>Editor Mode</label>
-                    <div class="field">
-                        <div class="ui radio checkbox">
-                            <input type="radio" name="editor-mode" value="normal" checked="checked">
-                            <label>Normal</label>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <div class="ui radio checkbox">
-                            <input type="radio" name="editor-mode" value="vim">
-                            <label>Vim</label>
-                        </div>
-                    </div>
-                    <div class="field">
-                        <div class="ui radio checkbox">
-                            <input type="radio" name="editor-mode" value="emacs">
-                            <label>Emacs</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="inline field">
-                    <div class="ui checkbox">
-                        <input type="checkbox" name="redirect-output">
-                        <label>Redirect stderr to stdout</label>
-                        <label>Redirect stderr to stdout</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <script>
-        let CLF_config = {
-            selector: ".changelogfy-widget",
-            app_id: "f6f982d0-3d91-4b1c-a3ce-b0eb54606c4e"
-        };
-    </script>
-    <script async src="https://widget.changelogfy.com/index.js"></script>
 </body>
 
 </html>
